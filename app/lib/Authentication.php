@@ -3,22 +3,21 @@
 
 namespace App\Lib;
 
+use App\Models\Token;
 use App\Models\User;
 
 class Authentication {
     private static User $user;
 
-    public static function login() {
-        $_SESSION["user"] = [
-            "id" => 1,
-            "name" => "John Doe",
-            "email" => "john@doe.com"
-        ];
+    public static function getToken($token): Token {
+        $token = Token::query()->where([
+            ["token", "=", $token]
+        ])->first();
+        return $token;
+    }
 
-        self::$user = new User();
-        self::$user->id = $_SESSION["user"]["id"];
-        self::$user->name = $_SESSION["user"]["name"];
-        self::$user->email = $_SESSION["user"]["email"];
+    public static function login(User $user = null) {
+        self::$user = $user;
     }
 
     public static function getUser(): User

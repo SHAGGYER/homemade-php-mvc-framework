@@ -31,7 +31,7 @@ class Model extends \stdClass {
 
     public function __get($name)
     {
-        return $this->attributes[$name];
+        return isset($this->attributes[$name]) ? $this->attributes[$name] : null;
     }
 
     public function getAttributes(): array
@@ -53,6 +53,41 @@ class Model extends \stdClass {
     public static function query(): Model {
         $obj = new static();
         return $obj;
+    }
+
+    public function save() {
+        if (isset($this->attributes["id"])) {
+            $this->update()->where([
+                ["id", "=", $this->attributes["id"]]
+            ])->execute();
+        } else {
+            $this->insert()->execute();
+        }
+    }
+
+    public function insert(): Model {
+        $this->query = "INSERT INTO {$this->table} (";
+        $this->query .= implode(", ", array_keys($this->attributes));
+        $this->query .= ") VALUES (";
+        $this->query .= implode(", ", array_fill(0, count($this->attributes), "?"));
+        $this->query .= ")";
+        $this->values = array_values($this->attributes);
+        return $this;
+    }
+
+    public function update(): Model {
+        $this->query = "UPDATE {$this->table} SET ";
+        $this->query .= implode(", ", array_map(function($key) {
+            return "{$key} = ?";
+        }, array_keys($this->attributes)));
+        $this->values = array_values($this->attributes);
+        return $this;
+    }
+
+    public function execute(): bool {
+        $stmt = $this->pdo->prepare($this->query);
+        $stmt->execute($this->values);
+        return true;
     }
 
     public function select(string $columns = "*") {
@@ -142,5 +177,9 @@ class Model extends \stdClass {
 
     public function toJson() {
         return json_encode($this->attributes);
+    }
+
+    public function toArray() {
+        return $this->attributes;
     }
 }

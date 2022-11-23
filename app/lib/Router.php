@@ -2,8 +2,12 @@
 
 namespace App\Lib;
 
+use App\Helpers\Helpers;
+
 class Router {
     private array $routes = [];
+    private array $middleware = [];
+    private array $current_route = [];
 
     public function add(string $route, string $callback) {
         $this->routes[$route] = $callback;
@@ -11,11 +15,16 @@ class Router {
     }
 
     public function middleware(string $class) {
-        $middleware = new $class();
-        $middleware->handle();
+        if ($this->current_route) {
+            $this->middleware[] = $class;
+        }
+        
+        return $this;
     }
 
     public function run() {
+        Helpers::cors();
+
         $route = $_SERVER['REQUEST_URI'];
         $last_char = $route[-1];
         if ($last_char === "/") {
@@ -68,6 +77,11 @@ class Router {
             if ($current_route) {
                 break;
             }
+        }
+
+        foreach ($this->middleware as $middleware) {
+            $middleware = new $middleware;
+            $middleware->handle();
         }
 
         if ($current_callback && $current_route) {
