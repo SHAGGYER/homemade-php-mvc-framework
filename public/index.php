@@ -1,3 +1,8 @@
 <?php
+session_start();
+use App\Lib\Kernel;
 
-require_once "./routes.php";
+require_once "../app/bootstrap.php";
+
+$kernel = new Kernel();
+$kernel->run();

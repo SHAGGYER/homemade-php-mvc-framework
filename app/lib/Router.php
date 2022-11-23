@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Lib;
+
 class Router {
     private array $routes = [];
 
@@ -73,12 +75,14 @@ class Router {
             $class = $class_parts[0];
             $method = $class_parts[1];
             $class_name = "\\App\\Controllers\\" . $class;
+            Container::set($class_name, $class_name);
             if (count($current_params) > 0) {
-                call_user_func_array(array(new $class_name, $method), $current_params);
+                $class = Container::get($class_name);
+                $class->$method(...$current_params);
             } else {
-                call_user_func(array(new $class_name, $method));
+                $class = Container::get($class_name);
+                $class->$method();
             }
-            
         } else {
             echo "404";
         }

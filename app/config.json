@@ -1,0 +1,8 @@
+{
+  "db": {
+    "host": "localhost",
+    "db": "suborgia",
+    "user": "root",
+    "pass": ""
+  }
+}
