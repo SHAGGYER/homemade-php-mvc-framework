@@ -82,10 +82,6 @@ class Router {
             }
         }
 
-        if ($this->current_route === $current_route) {
-            $this->current_route = $current_route;
-        }
-
         if (isset($this->routes[$current_route]["middleware"])) {
             foreach ($this->routes[$current_route]["middleware"] as $middleware) {
                 $middleware = new $middleware;
