@@ -3,6 +3,7 @@
 
 namespace App\Lib;
 
+use App\Helpers\Helpers;
 use App\Models\Token;
 use App\Models\User;
 
@@ -20,8 +21,16 @@ class Authentication {
         self::$user = $user;
     }
 
-    public static function getUser(): User
+    public static function getUser(): ?User
     {
-        return self::$user;
+        $token = Authentication::getToken(Helpers::getBearerToken());
+        if ($token->id) {
+            $user = User::query()->where([
+                ["id", "=", $token->user_id]
+            ])->first();
+            return $user;
+        }
+
+        return null;
     }
 }

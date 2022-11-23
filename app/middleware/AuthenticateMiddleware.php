@@ -16,7 +16,9 @@ class AuthenticateMiddleware {
                 ])->first());
             }
         } else {
-            echo("You are not logged in!");
+            http_response_code(401);
+            echo(json_encode(["message" => "You are not logged in!"]));
+            exit;
             // @todo Make a json response
         }
     }

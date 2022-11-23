@@ -6,17 +6,20 @@ use App\Helpers\Helpers;
 
 class Router {
     private array $routes = [];
-    private array $middleware = [];
-    private array $current_route = [];
+    private ?string $middleware = null;
+    private ?string $current_route = null;
 
     public function add(string $route, string $callback) {
-        $this->routes[$route] = $callback;
+        $this->routes[$route] = [
+            "callback" => $callback,
+        ];
+        $this->current_route = $route;
         return $this;
     }
 
-    public function middleware(string $class) {
+    public function middleware(...$args) {
         if ($this->current_route) {
-            $this->middleware[] = $class;
+            $this->routes[$this->current_route]["middleware"] = $args;
         }
         
         return $this;
@@ -43,7 +46,7 @@ class Router {
         $current_callback = null;
         $current_params = [];
 
-        foreach ($this->routes as $route => $callback) {
+        foreach ($this->routes as $route => $data) {
             $route_parts = explode("/", $route);
             array_shift($route_parts);
             
@@ -55,12 +58,12 @@ class Router {
                     if ($i == $j) {
                         if (!empty($matches[1])) {
                             $current_route = $route;
-                            $current_callback = $callback;
+                            $current_callback = $data["callback"];
                             $current_params[] = $parts[$j];
                             continue;
                         } elseif ($route_parts[$i] == $parts[$j]) {
                             $current_route = $route;
-                            $current_callback = $callback;
+                            $current_callback = $data["callback"];
                             continue;
                         } else {
                             $current_route = null;
@@ -79,9 +82,15 @@ class Router {
             }
         }
 
-        foreach ($this->middleware as $middleware) {
-            $middleware = new $middleware;
-            $middleware->handle();
+        if ($this->current_route === $current_route) {
+            $this->current_route = $current_route;
+        }
+
+        if (isset($this->routes[$current_route]["middleware"])) {
+            foreach ($this->routes[$current_route]["middleware"] as $middleware) {
+                $middleware = new $middleware;
+                $middleware->handle();
+            }
         }
 
         if ($current_callback && $current_route) {

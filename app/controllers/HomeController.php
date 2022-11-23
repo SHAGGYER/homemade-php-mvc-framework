@@ -38,15 +38,11 @@ class HomeController extends Controller {
     }
 
     public function init() {
-        $token = Authentication::getToken(Helpers::getBearerToken());
-        $user = null;
-        if ($token->id) {
-            $user = User::query()->where([
-                ["id", "=", $token->user_id]
-            ])->first();
+        $user = Authentication::getUser();
+
+        if ($user) {
             $user = $user->toArray();
         }
-        
         
         echo json_encode([
             "user" => $user
