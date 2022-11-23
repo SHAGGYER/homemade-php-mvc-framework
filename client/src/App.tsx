@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import { IUser } from "./models/IUser";
 import HttpClient from "./utilities/HttpClient";
 
 function App() {
+  const [user, setUser] = useState<IUser | null>(null);
+
   useEffect(() => {
     init();
   }, []);

@@ -5,9 +5,14 @@ namespace App\Controllers;
 use App\Helpers\Helpers;
 use App\Lib\Authentication;
 use App\Lib\Controller;
+use App\Lib\Request;
 use App\Models\User;
 
 class HomeController extends Controller {
+
+
+
+
     public function index() {
         echo "Hello World!s";
     }
@@ -45,7 +50,8 @@ class HomeController extends Controller {
         }
         
         echo json_encode([
-            "user" => $user
+            "user" => $user,
+            "name" => Request::query("name"),
         ]);
     }
 }

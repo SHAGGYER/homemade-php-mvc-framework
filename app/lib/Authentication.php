@@ -10,7 +10,7 @@ use App\Models\User;
 class Authentication {
     private static User $user;
 
-    public static function getToken($token): Token {
+    public static function getToken(?string $token = null): ?Token {
         $token = Token::query()->where([
             ["token", "=", $token]
         ])->first();
@@ -24,7 +24,7 @@ class Authentication {
     public static function getUser(): ?User
     {
         $token = Authentication::getToken(Helpers::getBearerToken());
-        if ($token->id) {
+        if (! empty($token) && $token->id) {
             $user = User::query()->where([
                 ["id", "=", $token->user_id]
             ])->first();

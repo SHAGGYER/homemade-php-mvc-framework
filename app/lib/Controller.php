@@ -3,6 +3,11 @@
 namespace App\Lib;
 
 class Controller {
+    public function __construct()
+    {
+        Request::parseIncoming();
+    }
+
     public function modelsToArray(array $array) {
         $json = [];
         foreach ($array as $row) {

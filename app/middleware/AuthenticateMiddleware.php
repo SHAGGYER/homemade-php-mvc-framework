@@ -11,17 +11,12 @@ class AuthenticateMiddleware {
         if ($token = Helpers::getBearerToken()) {
             $dbToken = Authentication::getToken($token);
             if ($dbToken) {
-                Authentication::login(User::query()->where([
-                    ["id", "=", $dbToken->user_id]
-                ])->first());
+                Authentication::login(User::findById($dbToken->user_id));
             }
         } else {
             http_response_code(401);
             echo(json_encode(["message" => "You are not logged in!"]));
             exit;
-            // @todo Make a json response
         }
     }
-
-    
 }

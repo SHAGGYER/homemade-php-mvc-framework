@@ -29,6 +29,8 @@ class Router {
         Helpers::cors();
 
         $route = $_SERVER['REQUEST_URI'];
+        $route = explode("?", $route)[0];
+        
         $last_char = $route[-1];
         if ($last_char === "/") {
             $route = substr($route, 0, -1);

@@ -43,6 +43,14 @@ class Model extends \stdClass {
         return $this->query;
     }
 
+    public static function findById(int $id): Model {
+        $model = new static();
+        $result = $model->where([
+            ["id", "=", $id]
+        ])->first();
+        return $result;
+    }
+
     public static function all() {
         $obj = new static();
         $results = $obj->select()->get();
@@ -139,7 +147,7 @@ class Model extends \stdClass {
         return $this;
     }
 
-    public function first() {
+    public function first(): ?Model {
         $this->query .= " LIMIT 1";
 
         $stmt = $this->pdo->prepare($this->query);
@@ -147,10 +155,14 @@ class Model extends \stdClass {
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if ($row) {
-            $this->attributes = $row;
+            $model = new static();
+            foreach ($row as $column) {
+                $model->{$column} = $row[$column];
+            }
+            return $model;
         }
 
-        return $this;
+        return null;
     }
 
     public function get() {
