@@ -6,6 +6,7 @@ use App\Middleware\AuthenticateMiddleware;
 $router = Container::get("router");
 
 // Path: app\routes.php
+$router->add("/users/{id}", "HomeController@getUserById");
 $router->add("/", "HomeController@index");
 $router->add("/test/{name}", "HomeController@index");
 $router->add("/test/{name}/test2", "HomeController@index");

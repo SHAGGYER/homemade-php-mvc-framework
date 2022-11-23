@@ -16,6 +16,7 @@ class Model extends \stdClass {
     private bool $has_select = false;
     private array $attributes = [];
     private \PDO $pdo;
+    private array $values = [];
 
     public function __construct()
     {
@@ -73,10 +74,13 @@ class Model extends \stdClass {
     public function where($data) {
         $has_where = false;
 
+        
         foreach ($data as $where) {
             $column = $where[0];
             $operator = $where[1];
             $value = $where[2];
+
+            $this->values[] = $value;
 
             $sql = "";
 
@@ -85,13 +89,17 @@ class Model extends \stdClass {
                 $this->has_select = true;
             }
 
+
             if (!$has_where) {
-                $sql .= " WHERE " . $column . " " . $operator . " " . $value;
+                $sql .= " WHERE " . $column . " " . $operator . " ?";
                 $has_where = true;
             } else {
-                $sql .= " AND " . $column . " " . $operator . " " . $value;
+                $sql .= " AND " . $column . " " . $operator . " ?";
             }
+
         }
+
+        $this->query .= $sql;
 
         return $this;
     }
@@ -99,10 +107,8 @@ class Model extends \stdClass {
     public function first() {
         $this->query .= " LIMIT 1";
 
-        var_dump($this->query);
         $stmt = $this->pdo->prepare($this->query);
-        $stmt->execute();
-
+        $stmt->execute($this->values);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if ($row) {
