@@ -50,7 +50,7 @@ class JWTCodec
 
         if (!hash_equals($signature, $signature_from_token)) {
 
-            throw new InvalidSignatureException;
+            throw new InvalidSignatureException("Not authenticated.");
         }
 
         $payload = json_decode($this->base64urlDecode($matches["payload"]), true);

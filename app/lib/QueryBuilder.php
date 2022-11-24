@@ -84,9 +84,16 @@ class QueryBuilder {
     }
 
     public function execute(): bool {
-        $stmt = $this->pdo->prepare($this->query);
-        $stmt->execute($this->values);
-        return true;
+        try {
+            $stmt = $this->pdo->prepare($this->query);
+            $stmt->execute($this->values);
+            return true;
+        } catch (\PDOException $e) {
+            Response::json([
+                "error" => $e->getMessage()
+            ], 500);
+            return false;
+        }
     }
 
     public function select(string $columns = "*") {

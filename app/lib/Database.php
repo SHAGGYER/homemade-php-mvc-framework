@@ -13,6 +13,7 @@ class Database {
 
         try {
             self::$pdo = new \PDO('mysql:host='.$host.';dbname='.$db, $user, $pass);
+            self::$pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             return self::$pdo;
         } catch (\PDOException $e) {
             print "Error!: " . $e->getMessage() . "<br/>";

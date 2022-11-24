@@ -5,16 +5,21 @@ namespace App\Lib;
 
 use App\Exceptions\InvalidSignatureException;
 use App\Helpers\Helpers;
+use App\Models\Token;
 use App\Models\User;
+use Exception;
 
-class Authentication {
+class Authentication
+{
     private static User $user;
 
-    public static function id(): int {
+    public static function id(): int
+    {
         return self::$user->id;
     }
 
-    public static function attempt(string $email, string $password): bool {
+    public static function attempt(string $email, string $password): bool
+    {
         $user = User::where([
             ["email", "=", $email]
         ])->first();
@@ -31,7 +36,8 @@ class Authentication {
         return false;
     }
 
-    public static function login(User $user = null) {
+    public static function login(User $user = null)
+    {
         self::$user = $user;
         return $user;
     }
@@ -45,12 +51,14 @@ class Authentication {
         return null;
     }
 
-    public static function newSession(): User {
+    public static function newSession(): ?User
+    {
         $user = self::newSessionFromToken(Helpers::getBearerToken());
         return $user;
     }
 
-    public static function newSessionFromToken(?string $token) {
+    public static function newSessionFromToken(?string $token): ?User
+    {
         if (!$token) {
             throw new InvalidSignatureException("Invalid token (no token)");
         }
@@ -59,15 +67,23 @@ class Authentication {
             $codec = new JWTCodec();
             $payload = $codec->decode($token);
             if (!$payload["user_id"]) {
-                throw new InvalidSignatureException("Invalid token (no user_id)");
+                return null;
             }
 
-            $user = User::where([
+            $signature = hash_hmac("sha256", $token, Config::get("JWT_SECRET"));
+            $tokenModel = Token::where([
+                ["token", "=", $signature]
+            ])->first();
+            if (!$tokenModel) {
+                return null;
+            }
+
+            $user = User::with(["roles"])->where([
                 ["id", "=", $payload["user_id"]]
             ])->first();
-            Authentication::login($user);
-            return self::$user;
-        } catch (InvalidSignatureException $e) {
+
+            return $user;
+        } catch (\Exception $e) {
             return Response::json(["message" => $e->getMessage()], 401);
         }
     }
