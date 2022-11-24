@@ -13,6 +13,8 @@ class Kernel {
     }
 
     public function run() {
+        Config::load();
+
         Database::connect();
         
         Container::set("router", Router::class);
