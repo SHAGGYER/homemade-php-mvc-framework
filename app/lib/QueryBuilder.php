@@ -15,6 +15,10 @@ class QueryBuilder {
     private array $attributes = [];
     private array $relations = [];
     private ?Model $model;
+    private array $wheres = [];
+
+    private ?string $paginationPreQuery = null;
+    private ?string $paginationPostQuery = null;
 
     public function __construct(?Model $model = null)
     {
@@ -93,8 +97,31 @@ class QueryBuilder {
             $this->select();
         }
 
+        $this->paginationPreQuery = $this->query;
+
         $offset = ($page - 1) * $limit;
-        $this->query .= " LIMIT $limit OFFSET $offset";
+        $this->paginationPostQuery .= " LIMIT $limit OFFSET $offset";
+        return $this;
+    }
+
+    public function orWhere(array $conditions): QueryBuilder {
+        $has_where = false;
+        $this->query .= " OR ";
+       
+        foreach ($conditions as $where) {
+            if ($has_where) {
+                $this->query .= " AND ";
+            }
+            $this->query .= "{$where[0]} {$where[1]} ?";
+            $this->values[] = $where[2];
+            $has_where = true;
+        }
+
+
+        if ($this->paginationPreQuery) {
+            $this->paginationPreQuery = $this->query;
+        }
+
         return $this;
     }
 
@@ -126,6 +153,10 @@ class QueryBuilder {
         }
 
         $this->query .= $sql;
+
+        if ($this->paginationPreQuery) {
+            $this->paginationPreQuery = $this->query;
+        }
         return $this;
     }
 
@@ -149,6 +180,10 @@ class QueryBuilder {
     }
 
     public function get(): Collection {
+        if ($this->paginationPostQuery) {
+            $this->query .= $this->paginationPostQuery;
+        }
+
         $stmt = $this->pdo->prepare($this->query);
         $stmt->execute($this->values);
 
@@ -163,6 +198,14 @@ class QueryBuilder {
 
             $this->model->queryBuilder->parseRelations();
             $models[] = $this->model;
+        }
+
+        if ($this->paginationPreQuery) {
+            $stmt = $this->pdo->prepare($this->paginationPreQuery);
+            $stmt->execute($this->values);
+            $total = $stmt->rowCount();
+
+            return new Collection(["data" => $models, "total" => $total]);
         }
 
         return new Collection($models);

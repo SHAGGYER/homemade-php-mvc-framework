@@ -57,27 +57,6 @@ class Model extends \stdClass implements \JsonSerializable {
         ])->first();
     }
 
- 
-
-    public function __set($name, $value)
-    {
-        $this->attributes[$name] = $value;
-    }
-
-    public function __get($name)
-    {
-        return isset($this->attributes[$name]) ? $this->attributes[$name] : null;
-    }
-
-    public function getAttributes(): array
-    {
-        return $this->attributes;
-    }
-
-    public function getQuery(): string {
-        return $this->query;
-    }
-
     public static function with(array $relations): QueryBuilder {
         $model = new static();
         return $model->queryBuilder->with($relations);
@@ -116,10 +95,28 @@ class Model extends \stdClass implements \JsonSerializable {
         return $this;
     }
 
+    public function __set($name, $value)
+    {
+        $this->attributes[$name] = $value;
+    }
+
+    public function __get($name)
+    {
+        return isset($this->attributes[$name]) ? $this->attributes[$name] : null;
+    }
+
+    public function getAttributes(): array
+    {
+        return $this->attributes;
+    }
+
+    public function getQuery(): string {
+        return $this->query;
+    }
+
     public function jsonSerialize() {
         return array_filter($this->attributes, function($value, $key) {
             return !in_array($key, $this->hidden);
         }, ARRAY_FILTER_USE_BOTH);
     }
-    
 }

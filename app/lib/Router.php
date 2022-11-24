@@ -108,7 +108,7 @@ class Router {
             if (!strtolower($_SERVER['REQUEST_METHOD']) == $current_method) {
                 Response::json(["error" => "Method not allowed"], 405);
             }
- 
+
             $class_parts = explode("@", $current_callback);
             $class = $class_parts[0];
             $method = $class_parts[1];

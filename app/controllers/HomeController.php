@@ -15,7 +15,19 @@ class HomeController extends Controller {
     }
 
     public function getUsers() {
-        $users = User::paginate($_GET["page"] ?? 1, 10)->get();
+        $users = User::all();
+        return ["content" => $users];
+    }
+
+    public function getUsersPaginate() {
+        $users = User::paginate($_GET["page"] ?? 1, 10)
+            ->where([
+                    ["id", ">", 0]
+                ])
+            ->orWhere([
+                    ["id", "<", 100]
+            ])
+            ->get();
 
         return ["content" => $users];
     }
@@ -55,11 +67,14 @@ class HomeController extends Controller {
     }
 
     public function init() {
-        $user_id = Authentication::getUser()->id;
-
-        $user = User::with(["roles", "token"])->where([
-            ["id", "=", $user_id]
+        $user = Authentication::getUser();
+        if ($user) {
+            $user = User::with(["roles", "token"])->where([
+            ["id", "=", $user->id]
         ])->first();
+        }
+
+        
 
         return [
             "user" => $user,
