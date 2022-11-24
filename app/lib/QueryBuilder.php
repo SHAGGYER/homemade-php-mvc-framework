@@ -7,20 +7,28 @@ use App\Traits\ConvertsModelToArray;
 class QueryBuilder {
     use ConvertsModelToArray;
 
-    private ?string $table;
+    public ?string $table;
+
     private bool $has_select = false;
     private \PDO $pdo;
     private array $values = [];
     private array $attributes = [];
     private array $relations = [];
-    private Model $model;
+    private ?Model $model;
 
-    public function __construct(Model $model = null)
+    public function __construct(?Model $model = null)
     {
         $this->query = "";
-        $this->table = $model->table;
         $this->pdo = Database::$pdo;
         $this->model = $model;
+        if ($model) {
+            $this->table = $model->table;
+        }
+    }
+
+    public function from(string $table): QueryBuilder {
+        $this->table = $table;
+        return $this;
     }
 
     public function with(array $relations): QueryBuilder {
@@ -92,7 +100,6 @@ class QueryBuilder {
     public function where($data) {
         $has_where = false;
 
-        
         foreach ($data as $where) {
             $column = $where[0];
             $operator = $where[1];
@@ -118,7 +125,6 @@ class QueryBuilder {
         }
 
         $this->query .= $sql;
-
         return $this;
     }
 
@@ -143,7 +149,7 @@ class QueryBuilder {
 
     public function get(): Collection {
         $stmt = $this->pdo->prepare($this->query);
-        $stmt->execute();
+        $stmt->execute($this->values);
 
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 

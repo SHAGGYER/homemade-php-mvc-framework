@@ -3,9 +3,7 @@
 namespace App\Models;
 
 use App\Lib\Model;
-use App\Traits\ConvertsModelToArray;
 use App\Traits\HasApiTokens;
-use stdClass;
 
 class User extends Model {
     use HasApiTokens;
@@ -21,5 +19,9 @@ class User extends Model {
 
     public function token() {
         return $this->hasOne(Token::class, "user_id", "id");
+    }
+
+    public function roles() {
+        return $this->belongsToMany(Role::class, "user_roles", "user_id", "role_id");
     }
 }

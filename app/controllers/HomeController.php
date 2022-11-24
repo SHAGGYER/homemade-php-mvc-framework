@@ -54,7 +54,7 @@ class HomeController extends Controller {
     public function init() {
         $user_id = Authentication::getUser()->id;
 
-        $user = User::with(["token"])->where([
+        $user = User::with(["roles"])->where([
             ["id", "=", $user_id]
         ])->first();
 

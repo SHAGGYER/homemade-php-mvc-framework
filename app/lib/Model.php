@@ -12,12 +12,35 @@ interface IModel {
     public function orderBy(): string;
 }
 
-class Model implements \JsonSerializable {
+class Model extends \stdClass implements \JsonSerializable {
     use ConvertsModelToArray;
 
     public string $table = "";
     private array $attributes = [];
     public QueryBuilder $queryBuilder;
+
+    public function __construct()
+    {
+        $this->queryBuilder = new QueryBuilder($this);
+    }
+
+    public function belongsToMany(string $model, string $pivot_table, string $pivot_one, string $pivot_two): Collection {
+        $qb = new QueryBuilder(new static());
+
+        $results = $qb->from($pivot_table)->where([
+            [$pivot_one, "=", $this->attributes["id"]]
+        ])->get();
+
+        $collection = [];
+        foreach ($results->toArray() as $result) {
+            $obj = new $model();
+            $collection[] = $obj->queryBuilder->where([
+                ["id", "=", $result[$pivot_two]]
+            ])->first();
+        }
+
+        return new Collection($collection);
+    }
 
     public function hasOne(string $model, string $foreignKey, string $localKey) {
         $model = new $model;
@@ -33,10 +56,7 @@ class Model implements \JsonSerializable {
         ])->first();
     }
 
-    public function __construct()
-    {
-        $this->queryBuilder = new QueryBuilder($this);
-    }
+ 
 
     public function __set($name, $value)
     {
