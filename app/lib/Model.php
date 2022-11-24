@@ -16,6 +16,7 @@ class Model extends \stdClass implements \JsonSerializable {
     use ConvertsModelToArray;
 
     public string $table = "";
+    public array $hidden = [];
     private array $attributes = [];
     public QueryBuilder $queryBuilder;
 
@@ -42,10 +43,10 @@ class Model extends \stdClass implements \JsonSerializable {
         return new Collection($collection);
     }
 
-    public function hasOne(string $model, string $foreignKey, string $localKey) {
+    public function hasOne(string $model, string $foreignKey, string $localKey = "id"): Model {
         $model = new $model;
         return $model->queryBuilder->where([
-            [$foreignKey, "=", $this->id]
+            [$foreignKey, "=", $this->{$localKey}]
         ])->first();
     }
 
@@ -116,7 +117,9 @@ class Model extends \stdClass implements \JsonSerializable {
     }
 
     public function jsonSerialize() {
-        return $this->attributes;
+        return array_filter($this->attributes, function($value, $key) {
+            return !in_array($key, $this->hidden);
+        }, ARRAY_FILTER_USE_BOTH);
     }
     
 }

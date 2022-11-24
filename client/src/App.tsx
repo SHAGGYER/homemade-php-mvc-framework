@@ -43,7 +43,6 @@ function App() {
 
   const getUsers = async () => {
     const { data } = await HttpClient().get<{ users: IUser[] }>("/users");
-    console.log(data.users);
   };
 
   return (

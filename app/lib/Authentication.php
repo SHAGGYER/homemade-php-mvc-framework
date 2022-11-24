@@ -38,6 +38,7 @@ class Authentication {
 
     public static function login(User $user = null) {
         self::$user = $user;
+        return $user;
     }
 
     public static function getUser(): ?User

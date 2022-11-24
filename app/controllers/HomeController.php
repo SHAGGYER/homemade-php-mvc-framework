@@ -15,7 +15,7 @@ class HomeController extends Controller {
     }
 
     public function getUsers() {
-        $users = User::with(["token"])->paginate($_GET["page"] ?? 1, 10)->get();
+        $users = User::paginate($_GET["page"] ?? 1, 10)->get();
 
         return ["content" => $users];
     }
@@ -44,17 +44,20 @@ class HomeController extends Controller {
         }
 
         $user = new User();
-        $user->name = "MM";
-        $user->email = "mikolaj73@gmail.com";
-        $user->password = password_hash("testtest", PASSWORD_BCRYPT);
+        $user->name = Request::body("name");
+        $user->email = Request::body("email");
+        $user->password = password_hash(Request::body("password"), PASSWORD_BCRYPT);
         $user->save();
-        echo $user->toJson();
+        
+        $token = Authentication::login($user)->getToken();
+
+        return ["content" => $user, "token" => $token];
     }
 
     public function init() {
         $user_id = Authentication::getUser()->id;
 
-        $user = User::with(["roles"])->where([
+        $user = User::with(["roles", "token"])->where([
             ["id", "=", $user_id]
         ])->first();
 

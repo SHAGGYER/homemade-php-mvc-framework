@@ -50,6 +50,7 @@ class QueryBuilder {
             ])->execute();
         } else {
             $this->insert()->execute();
+            $this->model->id = $this->pdo->lastInsertId();
         }
     }
 

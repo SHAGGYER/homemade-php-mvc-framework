@@ -9,6 +9,7 @@ class User extends Model {
     use HasApiTokens;
 
     public string $table = "users";
+    public array $hidden = ["password"];
     
     public static function emailExists(string $email) {
         $user = static::where([

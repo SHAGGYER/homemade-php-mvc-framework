@@ -66,6 +66,6 @@ class Collection implements \JsonSerializable {
 
     public function jsonSerialize()
     {
-        return $this->toArray();
+        return $this->items;
     }
 }
