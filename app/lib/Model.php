@@ -15,6 +15,7 @@ interface IModel {
 class Model extends \stdClass implements \JsonSerializable {
     use ConvertsModelToArray;
 
+    public bool $timestamps = true;
     public string $table = "";
     public array $hidden = [];
     private array $attributes = [];
@@ -84,6 +85,11 @@ class Model extends \stdClass implements \JsonSerializable {
     public static function all() {
         $obj = new static();
         return $obj->queryBuilder->select()->get();
+    }
+
+    public static function delete() {
+        $obj = new static();
+        return $obj->queryBuilder->delete();
     }
 
     public function toJson() {

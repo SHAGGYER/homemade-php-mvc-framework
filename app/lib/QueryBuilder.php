@@ -47,7 +47,10 @@ class QueryBuilder {
 
     public function save() {
         $this->attributes = $this->model->getAttributes();
-        $this->appendTimestamps();
+        if ($this->model->timestamps) {
+            $this->appendTimestamps();
+        }
+        
         if (isset($this->attributes["id"])) {
             $this->update()->where([
                 ["id", "=", $this->attributes["id"]]
@@ -223,6 +226,7 @@ class QueryBuilder {
 
     public function delete() {
         $this->query = "DELETE FROM " . $this->table;
+        $this->has_select = true;
         return $this;
     }
 

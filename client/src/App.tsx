@@ -12,13 +12,13 @@ function App() {
   const init = async () => {
     const { data } = await HttpClient().get<{
       user: IUser | null;
-    }>("/auth/init");
+    }>("/api/auth/init");
     setUser(data.user);
   };
 
   const login = async () => {
     const { data } = await HttpClient().post<{ content: { token: string } }>(
-      "/auth/login",
+      "/api/auth/login",
       {
         email: "mikolaj73@gmail.com",
         password: "testtest",
@@ -35,14 +35,14 @@ function App() {
   };
 
   const register = async () => {
-    const { data } = await HttpClient().post("/auth/register", {
+    const { data } = await HttpClient().post("/api/auth/register", {
       email: "mikolaj73@gmail.com",
       password: "testtest",
     });
   };
 
   const getUsers = async () => {
-    const { data } = await HttpClient().get<{ users: IUser[] }>("/users");
+    const { data } = await HttpClient().get<{ users: IUser[] }>("/api/users");
   };
 
   return (

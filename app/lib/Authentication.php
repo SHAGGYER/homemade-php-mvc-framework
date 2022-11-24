@@ -3,8 +3,7 @@
 
 namespace App\Lib;
 
-use App\Helpers\Helpers;
-use App\Models\Token;
+use App\Exceptions\InvalidSignatureException;
 use App\Models\User;
 
 class Authentication {
@@ -19,21 +18,16 @@ class Authentication {
             ["email", "=", $email]
         ])->first();
 
-        if ($user) {
-            if (password_verify($password, $user->password)) {
-                self::$user = $user;
-                return true;
-            }
+        if (!$user) {
+            return false;
+        }
+
+        if (password_verify($password, $user->password)) {
+            self::$user = $user;
+            return true;
         }
 
         return false;
-    }
-
-    public static function getToken(?string $token = null): ?Token {
-        $token = Token::where([
-            ["token", "=", Helpers::getBearerToken()]
-        ])->first();
-        return $token;
     }
 
     public static function login(User $user = null) {
@@ -47,15 +41,28 @@ class Authentication {
             return self::$user;
         }
 
-        $token = Authentication::getToken();
-        if (! empty($token) && $token->id) {
-            $user = User::where([
-                ["id", "=", $token->user_id]
-            ])->first();
-            self::$user = $user;
-            return $user;
+        return null;
+    }
+
+    public static function newSessionFromToken(?string $token) {
+        if (!$token) {
+            throw new InvalidSignatureException("Invalid token");
         }
 
-        return null;
+        try {
+            $codec = new JWTCodec();
+            $payload = $codec->decode($token);
+            if (!$payload["user_id"]) {
+                throw new InvalidSignatureException("Invalid token (from signature)");
+            }
+
+            $user = User::where([
+                ["id", "=", $payload["user_id"]]
+            ])->first();
+            Authentication::login($user);
+            return self::$user;
+        } catch (InvalidSignatureException $e) {
+            return Response::json(["message" => $e->getMessage()], 401);
+        }
     }
 }
