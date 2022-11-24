@@ -9,9 +9,20 @@ class Router {
     private ?string $current_route = null;
     private ?string $prev_route = null;
 
-    public function add(string $route, string $callback) {
+    public function get(string $route, $callback) {
+        $this->add($route, "get", $callback);
+        return $this;
+    }
+
+    public function post(string $route, $callback) {
+        $this->add($route, "post", $callback);
+        return $this;
+    }
+
+    private function add(string $route, string $method, string $callback) {
         $this->routes[$route] = [
             "callback" => $callback,
+            "method" => $method
         ];
         $this->current_route = $route;
         return $this;
@@ -46,6 +57,7 @@ class Router {
 
         $current_route = null;
         $current_callback = null;
+        $current_method = null;
         $current_params = [];
 
         foreach ($this->routes as $route => $data) {
@@ -59,11 +71,13 @@ class Router {
                          if ($route_parts[$i] == $parts[$j]) {
                             $current_route = $route;
                             $current_callback = $data["callback"];
+                            $current_method = $data["method"];
                             $this->prev_route = $route;
                             continue;
                         } elseif (!empty($matches[1]) && $this->prev_route == $route) {
                             $current_route = $route;
                             $current_callback = $data["callback"];
+                            $current_method = $data["method"];
                             $current_params[] = $parts[$j];
                             continue;
                         } else {
@@ -91,6 +105,10 @@ class Router {
         }
 
         if ($current_callback && $current_route) {
+            if (!strtolower($_SERVER['REQUEST_METHOD']) == $current_method) {
+                Response::json(["error" => "Method not allowed"], 405);
+            }
+ 
             $class_parts = explode("@", $current_callback);
             $class = $class_parts[0];
             $method = $class_parts[1];
