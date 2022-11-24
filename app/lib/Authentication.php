@@ -4,6 +4,7 @@
 namespace App\Lib;
 
 use App\Exceptions\InvalidSignatureException;
+use App\Helpers\Helpers;
 use App\Models\User;
 
 class Authentication {
@@ -44,16 +45,21 @@ class Authentication {
         return null;
     }
 
+    public static function newSession(): User {
+        $user = self::newSessionFromToken(Helpers::getBearerToken());
+        return $user;
+    }
+
     public static function newSessionFromToken(?string $token) {
         if (!$token) {
-            throw new InvalidSignatureException("Invalid token");
+            throw new InvalidSignatureException("Invalid token (no token)");
         }
 
         try {
             $codec = new JWTCodec();
             $payload = $codec->decode($token);
             if (!$payload["user_id"]) {
-                throw new InvalidSignatureException("Invalid token (from signature)");
+                throw new InvalidSignatureException("Invalid token (no user_id)");
             }
 
             $user = User::where([

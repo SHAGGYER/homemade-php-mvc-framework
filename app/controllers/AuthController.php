@@ -5,10 +5,8 @@ namespace App\Controllers;
 use App\Helpers\Helpers;
 use App\Lib\Authentication;
 use App\Lib\Controller;
-use App\Lib\JWTCodec;
 use App\Lib\Request;
 use App\Lib\Response;
-use App\Models\RefreshToken;
 use App\Models\User;
 
 class AuthController extends Controller {
@@ -39,10 +37,10 @@ class AuthController extends Controller {
     public function init() {
         $user = null;
 
-        if ($token = Helpers::getBearerToken()) {
-            $user = Authentication::newSessionFromToken($token);
+        if (Helpers::getBearerToken()) {
+            $user = Authentication::newSession();
         }
-
+        
         return [
             "user" => $user,
         ];
