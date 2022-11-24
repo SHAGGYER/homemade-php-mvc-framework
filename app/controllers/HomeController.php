@@ -56,15 +56,14 @@ class HomeController extends Controller {
     }
 
     public function init() {
-        $user = Authentication::getUser();
+        $user_id = Authentication::getUser()->id;
 
-        if ($user) {
-            $user = $user->toArray();
-        }
-        
+        $user = User::with(["token"])->where([
+            ["id", "=", $user_id]
+        ])->first();
+
         return [
             "user" => $user,
-            "name" => Request::query("name"),
         ];
     }
 }

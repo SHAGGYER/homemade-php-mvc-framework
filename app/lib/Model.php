@@ -19,6 +19,21 @@ class Model implements \JsonSerializable {
     private array $attributes = [];
     private QueryBuilder $queryBuilder;
 
+    public function hasOne(string $model, string $foreignKey, string $localKey) {
+        $model = new $model;
+        $model->queryBuilder->where([
+            [$foreignKey, "=", $this->{$localKey}]
+        ])->first();
+        return $model;
+    }
+
+    public function belongsTo(string $model, string $foreignKey, string $localKey) {
+        $model = new $model;
+        $model->queryBuilder->where([
+            [$localKey, "=", $this->{$foreignKey}]
+        ])->first();
+        return $model;
+    }
 
     public function __construct()
     {
@@ -42,6 +57,11 @@ class Model implements \JsonSerializable {
 
     public function getQuery(): string {
         return $this->query;
+    }
+
+    public static function with(array $relations): QueryBuilder {
+        $model = new static();
+        return $model->queryBuilder->with($relations);
     }
 
     public static function paginate(int $page = 1, int $limit = 10) {

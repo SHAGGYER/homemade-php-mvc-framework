@@ -18,4 +18,8 @@ class User extends Model {
         ])->first();
         return $user ? true : false;
     }
+
+    public function token() {
+        return $this->hasOne(Token::class, "user_id", "id");
+    }
 }

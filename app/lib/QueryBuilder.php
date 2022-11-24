@@ -12,6 +12,7 @@ class QueryBuilder {
     private \PDO $pdo;
     private array $values = [];
     private array $attributes = [];
+    private array $relations = [];
     private Model $model;
 
     public function __construct(Model $model = null)
@@ -20,6 +21,16 @@ class QueryBuilder {
         $this->table = $model->table;
         $this->pdo = Database::$pdo;
         $this->model = $model;
+    }
+
+    public function with(array $relations): QueryBuilder {
+        foreach ($relations as $relation) {
+            if (is_string($relation)) {
+                $parts = explode(".", $relation);
+                $this->relations[$relation] = $parts;
+            }
+        }
+        return $this;
     }
 
     public function save() {
@@ -122,6 +133,8 @@ class QueryBuilder {
             foreach ($row as $column => $value) {
                 $this->model->{$column} = $value;
             }
+
+            $this->parseRelations();
             return $this->model;
         }
 
@@ -141,6 +154,8 @@ class QueryBuilder {
             foreach ($row as $column => $value) {
                 $model->{$column} = $value;
             }
+
+            $model->queryBuilder()->parseRelations(); 
             $models[] = $model;
         }
 
@@ -155,5 +170,28 @@ class QueryBuilder {
     private function appendTimestamps() {
         $this->attributes["created_at"] = date("Y-m-d H:i:s");
         $this->attributes["updated_at"] = date("Y-m-d H:i:s");
+    }
+
+    public function delete() {
+        $this->query = "DELETE FROM " . $this->table;
+        return $this;
+    }
+
+    public function parseRelations() {
+        foreach($this->relations as $relation => $parts) {
+            $this->recursiveRelations($this->model, $parts);
+        }
+    }
+
+    public function recursiveRelations($model, $parts) {
+        $relation = array_shift($parts);
+        $model->{$relation} = $model->{$relation}();
+        if (count($parts) > 0) {
+            $this->recursiveRelations($model->{$relation}, $parts);
+        }
+    }
+
+    public function getQuery(): string {
+        return $this->query;
     }
 }
