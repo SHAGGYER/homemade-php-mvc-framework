@@ -13,7 +13,7 @@ class Container {
         self::$services[$key] = $service;
     }
 
-    private static function resolve(string $id): object {
+    private static function resolve($id): object {
         try {
             $reflectionClass = new \ReflectionClass($id);
         } catch(\ReflectionException $e) {

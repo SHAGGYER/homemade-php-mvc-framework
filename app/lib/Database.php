@@ -3,20 +3,13 @@
 namespace App\Lib;
 
 class Database {
-    private static $args = [
-        "host" => "localhost",
-        "db" => "",
-        "user" => "",
-        "pass" => ""
-    ];
-
     public static \PDO $pdo;
 
-    public static function connect($user, $pass, $host, $db): \PDO {
-        self::$args["user"] = $user;
-        self::$args["pass"] = $pass;
-        self::$args["host"] = $host;
-        self::$args["db"] = $db;
+    public static function connect(): \PDO {
+        $user = Config::get("DB_USER");
+        $pass = Config::get("DB_PASS");
+        $host = Config::get("DB_HOST");
+        $db = Config::get("DB_NAME");
 
         try {
             self::$pdo = new \PDO('mysql:host='.$host.';dbname='.$db, $user, $pass);

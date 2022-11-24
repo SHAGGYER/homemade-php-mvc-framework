@@ -13,9 +13,9 @@ class Kernel {
     }
 
     public function run() {
-        Database::connect("root", "", "localhost", "suborgia");
+        Database::connect();
         
-        Container::set("router", \App\Lib\Router::class);
+        Container::set("router", Router::class);
         $this->loadRoutes();
     }
 

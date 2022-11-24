@@ -1,0 +1,24 @@
+{
+  "name": "mikoo/suborgia",
+  "description": "Shaggyer's MVC Framework",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Mikolaj Marciniak",
+      "email": "mikoo1991@yahoo.com"
+    }
+  ],
+  "require": {
+    "vlucas/phpdotenv": "^5.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\Lib\\": "lib/",
+      "App\\Helpers\\": "helpers/",
+      "App\\Controllers\\": "controllers/",
+      "App\\Models\\": "models/",
+      "App\\Traits\\": "traits/"
+    }
+  }
+}
