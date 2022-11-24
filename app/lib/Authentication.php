@@ -10,9 +10,28 @@ use App\Models\User;
 class Authentication {
     private static User $user;
 
+    public static function id(): int {
+        return self::$user->id;
+    }
+
+    public static function attempt(string $email, string $password): bool {
+        $user = User::where([
+            ["email", "=", $email]
+        ])->first();
+
+        if ($user) {
+            if (password_verify($password, $user->password)) {
+                self::$user = $user;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static function getToken(?string $token = null): ?Token {
-        $token = Token::query()->where([
-            ["token", "=", $token]
+        $token = Token::where([
+            ["token", "=", Helpers::getBearerToken()]
         ])->first();
         return $token;
     }
@@ -23,11 +42,16 @@ class Authentication {
 
     public static function getUser(): ?User
     {
-        $token = Authentication::getToken(Helpers::getBearerToken());
+        if (isset(self::$user)) {
+            return self::$user;
+        }
+
+        $token = Authentication::getToken();
         if (! empty($token) && $token->id) {
-            $user = User::query()->where([
+            $user = User::where([
                 ["id", "=", $token->user_id]
             ])->first();
+            self::$user = $user;
             return $user;
         }
 

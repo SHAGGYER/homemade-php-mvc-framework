@@ -6,8 +6,8 @@ use App\Helpers\Helpers;
 
 class Router {
     private array $routes = [];
-    private ?string $middleware = null;
     private ?string $current_route = null;
+    private ?string $prev_route = null;
 
     public function add(string $route, string $callback) {
         $this->routes[$route] = [
@@ -54,22 +54,21 @@ class Router {
             
             for ($i = 0; $i < count($route_parts); $i++) {
                 preg_match("/{(.*)}/", $route_parts[$i], $matches);
-
                 for ($j = 0; $j < count($parts); $j++) {
-
                     if ($i == $j) {
-                        if (!empty($matches[1])) {
+                         if ($route_parts[$i] == $parts[$j]) {
+                            $current_route = $route;
+                            $current_callback = $data["callback"];
+                            $this->prev_route = $route;
+                            continue;
+                        } elseif (!empty($matches[1]) && $this->prev_route == $route) {
                             $current_route = $route;
                             $current_callback = $data["callback"];
                             $current_params[] = $parts[$j];
                             continue;
-                        } elseif ($route_parts[$i] == $parts[$j]) {
-                            $current_route = $route;
-                            $current_callback = $data["callback"];
-                            continue;
                         } else {
                             $current_route = null;
-                            continue;
+                            break;
                         }
                     } else {
                         $current_route = null;
@@ -97,12 +96,11 @@ class Router {
             $method = $class_parts[1];
             $class_name = "\\App\\Controllers\\" . $class;
             Container::set($class_name, $class_name);
-            if (count($current_params) > 0) {
-                $class = Container::get($class_name);
-                $class->$method(...$current_params);
-            } else {
-                $class = Container::get($class_name);
-                $class->$method();
+            $class = Container::get($class_name);
+            $response = $class->$method(...$current_params);
+            if (!empty($response)) {
+                echo Response::json($response);
+                exit;
             }
         } else {
             echo "404";

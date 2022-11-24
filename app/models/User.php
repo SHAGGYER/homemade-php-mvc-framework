@@ -3,13 +3,19 @@
 namespace App\Models;
 
 use App\Lib\Model;
+use App\Traits\ConvertsModelToArray;
 use App\Traits\HasApiTokens;
 use stdClass;
 
 class User extends Model {
     use HasApiTokens;
 
-    protected string $table = "users";
+    public string $table = "users";
     
-    
+    public static function emailExists(string $email) {
+        $user = static::where([
+            ["email", "=", $email]
+        ])->first();
+        return $user ? true : false;
+    }
 }

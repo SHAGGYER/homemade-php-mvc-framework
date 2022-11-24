@@ -9,37 +9,50 @@ use App\Lib\Request;
 use App\Models\User;
 
 class HomeController extends Controller {
-
-
-
-
     public function index() {
         echo "Hello World!s";
     }
 
     public function getUsers() {
-        $users = User::query()->paginate($_GET["page"] ?? 1, 10)->get();
-        echo json_encode([
-            "users" => $this->modelsToArray($users),
-        ]);
+        $users = User::paginate($_GET["page"] ?? 1, 10)->get();
+
+        return ["content" => $users];
     }
 
     public function getUserById($id) {
-        $user = User::query()->where([
+        $user = User::where([
             ["id", "=", $id]
         ])->first();
-        echo $user->toJson();
+
+        return ["content" => $user];
     }
 
     public function login() {
-        Authentication::login();
-        $user = Authentication::getUser();
-        echo "Hello {$user->name}!";
+        if (Authentication::attempt(Request::body("email"), Request::body("password"))) {
+            $token = Authentication::getUser()->createToken(Authentication::id());
+            return ["content" => ["token" => $token]];
+        } else {
+            return ["content" => ["error" => "Invalid credentials"]];
+        }
     }
 
     public function protected() {
         $user = Authentication::getUser();
         echo "Hello {$user->name}!";
+    }
+
+    public function register() {
+        $email_exists = User::emailExists(Request::body("email"));
+        if ($email_exists) {
+            return ["content" => ["error" => "Email already exists"]];
+        }
+
+        $user = new User();
+        $user->name = "MM";
+        $user->email = "mikolaj73@gmail.com";
+        $user->password = password_hash("testtest", PASSWORD_BCRYPT);
+        $user->save();
+        echo $user->toJson();
     }
 
     public function init() {
@@ -49,9 +62,9 @@ class HomeController extends Controller {
             $user = $user->toArray();
         }
         
-        echo json_encode([
+        return [
             "user" => $user,
             "name" => Request::query("name"),
-        ]);
+        ];
     }
 }
