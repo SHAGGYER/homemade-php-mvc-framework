@@ -27,7 +27,7 @@ class QueryBuilder {
         foreach ($relations as $relation) {
             if (is_string($relation)) {
                 $parts = explode(".", $relation);
-                $this->relations[$relation] = $parts;
+                $this->relations[] = $parts;
             }
         }
         return $this;
@@ -150,13 +150,12 @@ class QueryBuilder {
         $models = [];
 
         foreach ($rows as $row) {
-            $model = new $this->model;
             foreach ($row as $column => $value) {
-                $model->{$column} = $value;
+                $this->model->{$column} = $value;
             }
 
-            $model->queryBuilder()->parseRelations(); 
-            $models[] = $model;
+            $this->model->queryBuilder->parseRelations();
+            $models[] = $this->model;
         }
 
         return new Collection($models);
@@ -185,10 +184,13 @@ class QueryBuilder {
 
     public function recursiveRelations($model, $parts) {
         $relation = array_shift($parts);
-        $model->{$relation} = $model->{$relation}();
-        if (count($parts) > 0) {
-            $this->recursiveRelations($model->{$relation}, $parts);
+        if ($model) {
+            $model->{$relation} = $model->{$relation}();
+            if (count($parts) > 0 && !empty($model)) {
+                $this->recursiveRelations($model->{$relation}, $parts);
+            }
         }
+    
     }
 
     public function getQuery(): string {

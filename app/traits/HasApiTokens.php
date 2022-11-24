@@ -6,7 +6,7 @@ use App\Helpers\Helpers;
 use App\Models\Token;
 
 trait HasApiTokens {
-    public function createToken(int $user_id) {
+    public function getToken() {
         $existing_token = Token::where([
             ["user_id", "=", $this->id]
         ])->first();
@@ -15,7 +15,7 @@ trait HasApiTokens {
             $tokenStr = bin2hex(random_bytes(32));
             
             $token = new Token();
-            $token->user_id = $user_id;
+            $token->user_id = $this->id;
             $token->token = $tokenStr;
             $token->save();
             return $token->token;
@@ -24,12 +24,4 @@ trait HasApiTokens {
             return $this->token;
         }
     }
-
-    public function getToken() {
-        return $this->token;
-    }
-
-    public function getBearerToken() {
-        $token = Helpers::getBearerToken();
-    } 
 }

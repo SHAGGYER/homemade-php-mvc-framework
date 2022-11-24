@@ -6,6 +6,7 @@ use App\Helpers\Helpers;
 use App\Lib\Authentication;
 use App\Lib\Controller;
 use App\Lib\Request;
+use App\Lib\Response;
 use App\Models\User;
 
 class HomeController extends Controller {
@@ -14,7 +15,7 @@ class HomeController extends Controller {
     }
 
     public function getUsers() {
-        $users = User::paginate($_GET["page"] ?? 1, 10)->get();
+        $users = User::with(["token"])->paginate($_GET["page"] ?? 1, 10)->get();
 
         return ["content" => $users];
     }
@@ -29,22 +30,17 @@ class HomeController extends Controller {
 
     public function login() {
         if (Authentication::attempt(Request::body("email"), Request::body("password"))) {
-            $token = Authentication::getUser()->createToken(Authentication::id());
+            $token = Authentication::getUser()->getToken();
             return ["content" => ["token" => $token]];
         } else {
-            return ["content" => ["error" => "Invalid credentials"]];
+            return Response::json(["message" => "Invalid credentials"], 401);
         }
-    }
-
-    public function protected() {
-        $user = Authentication::getUser();
-        echo "Hello {$user->name}!";
     }
 
     public function register() {
         $email_exists = User::emailExists(Request::body("email"));
         if ($email_exists) {
-            return ["content" => ["error" => "Email already exists"]];
+            return Response::json(["error" => "Email already exists"], 400);
         }
 
         $user = new User();

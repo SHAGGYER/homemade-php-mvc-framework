@@ -17,22 +17,20 @@ class Model implements \JsonSerializable {
 
     public string $table = "";
     private array $attributes = [];
-    private QueryBuilder $queryBuilder;
+    public QueryBuilder $queryBuilder;
 
     public function hasOne(string $model, string $foreignKey, string $localKey) {
         $model = new $model;
-        $model->queryBuilder->where([
-            [$foreignKey, "=", $this->{$localKey}]
+        return $model->queryBuilder->where([
+            [$foreignKey, "=", $this->id]
         ])->first();
-        return $model;
     }
 
     public function belongsTo(string $model, string $foreignKey, string $localKey) {
         $model = new $model;
-        $model->queryBuilder->where([
+        return $model->queryBuilder->where([
             [$localKey, "=", $this->{$foreignKey}]
         ])->first();
-        return $model;
     }
 
     public function __construct()

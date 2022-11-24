@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import "./App.css";
 import { IUser } from "./models/IUser";
 import HttpClient from "./utilities/HttpClient";
 
@@ -30,6 +29,11 @@ function App() {
     await init();
   };
 
+  const logout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+  };
+
   const register = async () => {
     const { data } = await HttpClient().post("/auth/register", {
       email: "mikolaj73@gmail.com",
@@ -37,11 +41,33 @@ function App() {
     });
   };
 
+  const getUsers = async () => {
+    const { data } = await HttpClient().get<{ users: IUser[] }>("/users");
+    console.log(data.users);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <p>User Email: {user?.email}</p>
-      <button onClick={login}>Login</button>
-      <button onClick={register}>Register</button>
+      <div className="flex gap-4 items-center">
+        <button className="py-2 px-4 border border-gray-500" onClick={login}>
+          Login
+        </button>
+        <button className="py-2 px-4 border border-gray-500" onClick={register}>
+          Register
+        </button>
+        <button className="py-2 px-4 border border-gray-500" onClick={logout}>
+          Logout
+        </button>
+        {user?.id && (
+          <button
+            className="py-2 px-4 border border-gray-500"
+            onClick={getUsers}
+          >
+            Get Users
+          </button>
+        )}
+      </div>
     </div>
   );
 }
